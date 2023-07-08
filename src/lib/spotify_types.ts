@@ -2,10 +2,24 @@ export interface AccessTokenResponse {
   access_token: string;
 }
 
-export interface CurrentUserResponse {
+export interface FetchedCurrentUser {
   display_name: string;
   id: string;
+}
+
+export interface CurrentUser {
+  display_name: string;
+  id: string;
+}
+
+export interface CurrentUserResponse extends FetchedCurrentUser {
   uri: string;
+}
+
+export interface FormattedTrack {
+  name: string;
+  uri: string;
+  artists: string;
 }
 
 export interface SavedTrack {
@@ -38,6 +52,9 @@ export interface createPlaylistResponse {
   uri: string;
   description: string;
   name: string;
+  external_urls: {
+    spotify: string;
+  };
 }
 
 export interface addTracksToPlaylistResponse {

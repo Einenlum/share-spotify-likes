@@ -1,9 +1,9 @@
 import { redirect } from '@sveltejs/kit';
+import { CLIENT_ID, REDIRECT_URI, SCOPES } from './config';
 
 import {
-  CLIENT_ID,
+  getState,
   getCodeVerifierAndChallenge,
-  generateRandomString,
   getToken as getStoredToken,
 } from './authentication';
 
@@ -11,30 +11,20 @@ import type {
   AccessTokenResponse,
   addTracksToPlaylistResponse,
   createPlaylistResponse,
-  CurrentUserResponse,
+  FetchedCurrentUser,
+  CurrentUser,
+  FormattedTrack,
   SavedTracksResponse,
 } from './spotify_types';
 
-const PORT = 5173;
-const REDIRECT_URI = `http://localhost:${PORT}/callback`;
-
-const SCOPES = [
-  'playlist-read-private',
-  'playlist-read-collaborative',
-  'playlist-modify-public',
-  'playlist-modify-private',
-  'user-library-read',
-];
-
 export async function openSpotifyConnectPage() {
   const { challenge } = await getCodeVerifierAndChallenge();
-  const state = generateRandomString(128);
 
   const params = {
     response_type: 'code',
     client_id: CLIENT_ID,
     redirect_uri: REDIRECT_URI,
-    state: state,
+    state: getState(),
     scope: SCOPES.join(' '),
     code_challenge_method: 'S256',
     code_challenge: challenge,
@@ -46,7 +36,7 @@ export async function openSpotifyConnectPage() {
   window.open(url);
 }
 
-export async function getToken(code: string) {
+export async function createAccessToken(code: string) {
   const { codeVerifier, challenge } = await getCodeVerifierAndChallenge();
   const headers = { 'Content-Type': 'application/x-www-form-urlencoded' };
   const data = {
@@ -78,9 +68,9 @@ export async function getConnectedUser() {
   const headers = { Authorization: `Bearer ${token}` };
 
   const response = await fetch(url, { headers: headers });
-  const json: CurrentUserResponse = await response.json();
+  const json: FetchedCurrentUser = await response.json();
 
-  return { name: json.display_name, id: json.id };
+  return { display_name: json.display_name, id: json.id };
 }
 
 export async function getUserPlaylists() {
@@ -117,7 +107,7 @@ export async function getSavedTracksForUser(offset = 0) {
       name: item.track.name,
       uri: item.track.uri,
       artists: item.track.artists.map((artist) => artist.name).join(', '),
-    };
+    } as FormattedTrack;
   });
 
   return { total: json.total, tracks: tracks };

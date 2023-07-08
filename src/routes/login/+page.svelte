@@ -1,19 +1,54 @@
-<script>
-  import { openSpotifyConnectPage } from '$lib/spotify_client';
+<script lang="ts">
+  import Button from '$lib/components/Button.svelte';
+  import { fade } from 'svelte/transition';
 
-  let clicked = false;
+  import { getCodeVerifierAndChallenge } from '$lib/authentication';
+  import { CLIENT_ID, REDIRECT_URI, SCOPES } from '$lib/config';
+  import { getState } from '$lib/authentication';
 
-  const openConnectPage = async () => {
-    await openSpotifyConnectPage();
-    clicked = true;
-  };
+  let loading = false;
+
+  async function getConnectUrl() {
+    const { challenge } = await getCodeVerifierAndChallenge();
+
+    const params = {
+      response_type: 'code',
+      client_id: CLIENT_ID,
+      redirect_uri: REDIRECT_URI,
+      state: getState(),
+      scope: SCOPES.join(' '),
+      code_challenge_method: 'S256',
+      code_challenge: challenge,
+    };
+
+    const queryParams = new URLSearchParams(params).toString();
+
+    return `https://accounts.spotify.com/authorize?${queryParams}`;
+  }
+
+  async function goToConnectUrl() {
+    loading = true;
+    const url = await getConnectUrl();
+
+    window.location.href = url;
+  }
 </script>
 
-{#if clicked}
-  <p>You can now close this tab.</p>
-{:else}
-  <h1>Please login to Spotify</h1>
+<div class="mt-12 mx-auto w-10/12 md:w-96 h-60 text-center pt-16">
+  <p class="text-zinc-50 text-lg">You are not connected.</p>
 
-  <p>You are not connected</p>
-  <button on:click={openConnectPage}>Connect to Spotify</button>
-{/if}
+  <div
+    class="mx-auto bg-gradient-to-tr from-slate-700 to-transparent h-fit mt-8 rounded-xl px-4"
+  >
+    <p class="text-center text-white py-10">
+      This app only executes in your browser. No one except you and Spotify can
+      access your data.
+    </p>
+  </div>
+
+  {#if !loading}
+    <div transition:fade class="mt-8 lg:mt-12">
+      <Button on:click|once={goToConnectUrl}>Connect to Spotify</Button>
+    </div>
+  {/if}
+</div>
