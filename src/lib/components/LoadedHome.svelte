@@ -29,15 +29,19 @@
 
 <TrackList tracks={savedTracks} {finishedLoadingTracks} {totalTracks} />
 
-<div>
-  {#if canAct}
-    <CreatePlaylistAction
-      {changeStatus}
-      {user}
-      {savedTracks}
-      {setPlaylistUrl}
-    />
-  {:else if status === 'done'}
-    <PlaylistCreated {playlistUrl} />
-  {/if}
-</div>
+{#if totalTracks === 0 && finishedLoadingTracks}
+  <div class="text-white text-center">You have no liked tracks on Spotify.</div>
+{:else}
+  <div>
+    {#if canAct}
+      <CreatePlaylistAction
+        {changeStatus}
+        {user}
+        {savedTracks}
+        {setPlaylistUrl}
+      />
+    {:else if status === 'done'}
+      <PlaylistCreated {playlistUrl} />
+    {/if}
+  </div>
+{/if}
