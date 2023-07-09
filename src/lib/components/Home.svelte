@@ -9,24 +9,24 @@
 
   let user: CurrentUser | null = null;
   let savedTracks: FormattedTrack[] = [];
+  let totalTracks = 0;
 
   onMount(async () => {
     user = await getConnectedUser();
 
     let offset = 0;
-    let total = null;
     do {
       let data = await getSavedTracksForUser(offset);
-      total = data.total;
+      totalTracks = data.total;
       savedTracks = [...savedTracks, ...data.tracks];
       offset = offset + 50;
-    } while (total > savedTracks.length);
+    } while (totalTracks > savedTracks.length);
     finishedLoadingTracks = true;
   });
 </script>
 
 {#if user !== null}
   <div transition:fade>
-    <LoadedHome {user} {savedTracks} {finishedLoadingTracks} />
+    <LoadedHome {user} {savedTracks} {finishedLoadingTracks} {totalTracks} />
   </div>
 {/if}

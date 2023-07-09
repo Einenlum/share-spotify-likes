@@ -3,6 +3,7 @@
   import CreatePlaylistAction from './CreatePlaylistAction.svelte';
   export let user: CurrentUser;
   export let savedTracks: FormattedTrack[] = [];
+  export let totalTracks: number;
   export let finishedLoadingTracks: boolean;
   let status: StatusType = 'ready';
   $: canAct = status === 'ready' && finishedLoadingTracks;
@@ -26,7 +27,7 @@
 
 <ConnectedUser {user} />
 
-<TrackList tracks={savedTracks} {finishedLoadingTracks} />
+<TrackList tracks={savedTracks} {finishedLoadingTracks} {totalTracks} />
 
 <div>
   {#if canAct}
