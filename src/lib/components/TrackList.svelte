@@ -28,7 +28,7 @@
           Loading {currentTotal}/{totalTracks} tracks ...
         </h1>
         <progress
-          class="mt-4 [&::-webkit-progress-bar]:rounded-lg [&::-webkit-progress-value]:rounded-lg [&::-webkit-progress-bar]:bg-white [&::-webkit-progress-value]:bg-green-400 [&::-moz-progress-bar]:bg-green-400"
+          class="mt-4 rounded-lg [&::-webkit-progress-bar]:rounded-lg [&::-webkit-progress-value]:rounded-lg [&::-webkit-progress-bar]:bg-white [&::-webkit-progress-value]:bg-green-400 [&::-webkit-progress-value]:saturate-50 [&::-moz-progress-bar]:bg-green-400 [&::-moz-progress-bar]:saturate-50 [&::-moz-progress-bar]:rounded-lg"
           value={$progress}
         />
       </div>
