@@ -1,9 +1,10 @@
+import { goto } from '$app/navigation';
 import {
   generateRandomString,
   generateCodeVerifier,
   generateChallenge,
 } from '$lib/security';
-
+import { redirect } from '@sveltejs/kit';
 
 export function getToken() {
   return window.localStorage.getItem('spotifyToken');
@@ -42,4 +43,20 @@ export async function getCodeVerifierAndChallenge() {
     codeVerifier: localStorage.getItem('codeVerifier') as string,
     challenge: localStorage.getItem('challenge') as string,
   };
+}
+
+export async function throwUnauthenticated(
+  message: string,
+  spotifyResponse?: Response
+) {
+  if (spotifyResponse) {
+    const json = await spotifyResponse.json();
+    console.error(message, spotifyResponse.status, json);
+  } else {
+    console.error(message);
+  }
+
+  clearToken();
+
+  return goto('/login');
 }

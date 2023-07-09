@@ -5,6 +5,7 @@
 
   import type { CurrentUser, FormattedTrack } from '$lib/spotify_types';
   import LoadedHome from './LoadedHome.svelte';
+  import { goto } from '$app/navigation';
   let finishedLoadingTracks = false;
 
   let user: CurrentUser | null = null;
@@ -13,6 +14,9 @@
 
   onMount(async () => {
     user = await getConnectedUser();
+    if (!user) {
+      return goto('/login');
+    }
 
     let offset = 0;
     do {
@@ -25,7 +29,7 @@
   });
 </script>
 
-{#if user !== null}
+{#if user}
   <div transition:fade>
     <LoadedHome {user} {savedTracks} {finishedLoadingTracks} {totalTracks} />
   </div>

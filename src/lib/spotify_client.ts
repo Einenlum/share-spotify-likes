@@ -1,5 +1,6 @@
-import { redirect } from '@sveltejs/kit';
+import { error, redirect } from '@sveltejs/kit';
 import { CLIENT_ID, REDIRECT_URI, SCOPES } from './config';
+import { throwUnauthenticated } from './authentication';
 
 import {
   getState,
@@ -16,25 +17,7 @@ import type {
   FormattedTrack,
   SavedTracksResponse,
 } from './spotify_types';
-
-export async function openSpotifyConnectPage() {
-  const { challenge } = await getCodeVerifierAndChallenge();
-
-  const params = {
-    response_type: 'code',
-    client_id: CLIENT_ID,
-    redirect_uri: REDIRECT_URI,
-    state: getState(),
-    scope: SCOPES.join(' '),
-    code_challenge_method: 'S256',
-    code_challenge: challenge,
-  };
-
-  const queryParams = new URLSearchParams(params).toString();
-  const url = `https://accounts.spotify.com/authorize?${queryParams}`;
-
-  window.open(url);
-}
+import { goto } from '$app/navigation';
 
 export async function createAccessToken(code: string) {
   const { codeVerifier, challenge } = await getCodeVerifierAndChallenge();
@@ -53,6 +36,9 @@ export async function createAccessToken(code: string) {
     body: new URLSearchParams(data).toString(),
   });
 
+  if (!response.ok) {
+    await throwUnauthenticated('Could not create access token', response);
+  }
   const json: AccessTokenResponse = await response.json();
 
   return json.access_token;
@@ -61,13 +47,17 @@ export async function createAccessToken(code: string) {
 export async function getConnectedUser() {
   const token = getStoredToken();
   if (!token) {
-    throw redirect(301, '/login');
+    goto('/login');
   }
 
   const url = 'https://api.spotify.com/v1/me';
   const headers = { Authorization: `Bearer ${token}` };
 
   const response = await fetch(url, { headers: headers });
+
+  if (!response.ok) {
+    await throwUnauthenticated('Could not get connected user', response);
+  }
   const json: FetchedCurrentUser = await response.json();
 
   return { display_name: json.display_name, id: json.id };
@@ -76,13 +66,16 @@ export async function getConnectedUser() {
 export async function getUserPlaylists() {
   const token = getStoredToken();
   if (!token) {
-    throw redirect(301, '/login');
+    goto('/login');
   }
 
   const url = 'https://api.spotify.com/v1/me/playlists';
   const headers = { Authorization: `Bearer ${token}` };
 
   const response = await fetch(url, { headers: headers });
+  if (!response.ok) {
+    await throwUnauthenticated('Could not get user playlists', response);
+  }
   const json = await response.json();
 
   return json;
@@ -91,7 +84,7 @@ export async function getUserPlaylists() {
 export async function getSavedTracksForUser(offset = 0) {
   const token = getStoredToken();
   if (!token) {
-    throw redirect(301, '/login');
+    goto('/login');
   }
 
   const params = { limit: '50', offset: offset.toString() };
@@ -100,6 +93,11 @@ export async function getSavedTracksForUser(offset = 0) {
   const headers = { Authorization: `Bearer ${token}` };
 
   const response = await fetch(url, { headers: headers });
+
+  if (!response.ok) {
+    await throwUnauthenticated('Could not get saved tracks for user', response);
+  }
+
   const json: SavedTracksResponse = await response.json();
 
   const tracks = json.items.map((item) => {
@@ -121,7 +119,7 @@ export async function createPlaylist(
 ) {
   const token = getStoredToken();
   if (!token) {
-    throw redirect(301, '/login');
+    goto('/login');
   }
 
   const url = `https://api.spotify.com/v1/users/${userId}/playlists`;
@@ -141,6 +139,10 @@ export async function createPlaylist(
     body: JSON.stringify(data),
   });
 
+  if (!response.ok) {
+    await throwUnauthenticated('Could not create playlist', response);
+  }
+
   const json: createPlaylistResponse = await response.json();
 
   return json;
@@ -149,7 +151,7 @@ export async function createPlaylist(
 export async function addTracksToPlaylist(playlist_id: string, uris: string[]) {
   const token = getStoredToken();
   if (!token) {
-    throw redirect(301, '/login');
+    goto('/login');
   }
 
   const url = `https://api.spotify.com/v1/playlists/${playlist_id}/tracks`;
@@ -163,6 +165,10 @@ export async function addTracksToPlaylist(playlist_id: string, uris: string[]) {
     headers: headers,
     body: JSON.stringify({ uris: uris }),
   });
+
+  if (!response.ok) {
+    await throwUnauthenticated('Could not add tracks to playlist', response);
+  }
 
   const json: addTracksToPlaylistResponse = await response.json();
 
