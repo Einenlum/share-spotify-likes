@@ -10,3 +10,7 @@ The problem is you can't (right now) select multiple tracks at once to add to a 
 ## Does it store anything?
 
 No, there is no server involved here. Everything happens in your browser. It's between Spotify and you only.
+
+## Is the playlist every time I like a track?
+
+Sadly, no. I don't think it's possible with Spotify's web API right now. You will have to create a new playlist.
