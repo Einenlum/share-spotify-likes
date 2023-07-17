@@ -51,10 +51,8 @@
       publicPlaylist
     );
     const chunks = chunkItems(savedTracks, 100);
-    console.log(chunks);
     chunks.forEach(async (chunk) => {
       const uris = chunk.map((track) => track.uri);
-      console.log(uris);
       await addTracksToPlaylist(playlist.id, uris);
     });
 
