@@ -44,6 +44,10 @@
       This app only executes in your browser. No one except you and Spotify can
       access your data.
     </p>
+
+    <p class="text-center text-white mt-10 pb-5 font-bold">
+      This app is open-source and made by a third party. This is not an official Spotify app.
+    </p>
   </div>
 
   {#if !loading}
