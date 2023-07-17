@@ -1,8 +1,6 @@
 import { PUBLIC_CLIENT_ID, PUBLIC_REDIRECT_URI } from '$env/static/public';
 
 export const SCOPES = [
-  'playlist-read-private',
-  'playlist-read-collaborative',
   'playlist-modify-public',
   'playlist-modify-private',
   'user-library-read',
